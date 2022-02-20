@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: sts-test-volume-runasuser
+spec:
+  serviceName: default
+  replicas: 1
+  selector:
+    matchLabels:
+      component: test-volume
+  volumeClaimTemplates:
+  - metadata:
+      name: test-volume
+      labels:
+        component: test-volume
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      volumeMode: Filesystem
+      resources:
+        requests:
+          storage: 10Gi
+  template:
+    metadata:
+      labels:
+        component: test-volume
+    spec:
+      securityContext:
+        runAsUser: 1000
+      containers:
+      - name: test-container
+        image: "alpine:latest"
+        command:
+        - sleep
+        - 24h
+        volumeMounts:
+          - mountPath: /test
+            name: test-volume
